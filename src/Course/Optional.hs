@@ -23,12 +23,13 @@ data Optional a =
 --
 -- >>> mapOptional (+1) (Full 8)
 -- Full 9
+--
 mapOptional ::
   (a -> b)
   -> Optional a
   -> Optional b
-mapOptional =
-  error "todo: Course.Optional#mapOptional"
+mapOptional _ Empty = Empty
+mapOptional f (Full x) = Full (f x)
 
 -- | Bind the given function on the possible value.
 --
@@ -40,12 +41,13 @@ mapOptional =
 --
 -- >>> bindOptional (\n -> if even n then Full (n - 1) else Full (n + 1)) (Full 9)
 -- Full 10
+--
 bindOptional ::
   (a -> Optional b)
   -> Optional a
   -> Optional b
-bindOptional =
-  error "todo: Course.Optional#bindOptional"
+bindOptional _ Empty = Empty
+bindOptional f (Full x) = f x
 
 -- | Return the possible value if it exists; otherwise, the second argument.
 --
@@ -54,18 +56,21 @@ bindOptional =
 --
 -- >>> Empty ?? 99
 -- 99
+--
 (??) ::
   Optional a
   -> a
   -> a
-(??) =
-  error "todo: Course.Optional#(??)"
+(??) Empty x = x
+(??) (Full y) _ = y
 
 -- | Try the first optional for a value. If it has a value, use it; otherwise,
 -- use the second value.
 --
 -- >>> Full 8 <+> Empty
--- Full 8
+-- *** Exception: todo: Course.Optional#(<+>)
+-- CallStack (from HasCallStack):
+--   error, called at d:\system-f\fp-course\src\Course\Optional.hs:100:3 in main:Course.Optional
 --
 -- >>> Full 8 <+> Full 9
 -- Full 8
@@ -79,8 +84,8 @@ bindOptional =
   Optional a
   -> Optional a
   -> Optional a
-(<+>) =
-  error "todo: Course.Optional#(<+>)"
+(<+>) (Full x) _ = Full x
+(<+>) Empty y = y
 
 -- | Replaces the Full and Empty constructors in an optional.
 --
@@ -94,11 +99,11 @@ optional ::
   -> b
   -> Optional a
   -> b
-optional =
-  error "todo: Course.Optional#optional"
+optional _ b Empty = b
+optional f _ (Full x) = f x
 
 applyOptional :: Optional (a -> b) -> Optional a -> Optional b
-applyOptional f a = bindOptional (\f' -> mapOptional f' a) f
+applyOptional f a = bindOptional (`mapOptional` a) f
 
 twiceOptional :: (a -> b -> c) -> Optional a -> Optional b -> Optional c
 twiceOptional f = applyOptional . mapOptional f

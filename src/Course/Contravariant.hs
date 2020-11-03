@@ -9,7 +9,7 @@ import Course.Core
 -- | A 'Predicate' is usually some kind of test about a
 -- thing. Example: a 'Predicate Integer' says "give me an 'Integer'"
 -- and I'll answer 'True' or 'False'.
-data Predicate a = Predicate (a -> Bool)
+newtype Predicate a = Predicate (a -> Bool)
 
 runPredicate ::
   Predicate a
@@ -22,7 +22,7 @@ runPredicate (Predicate f) =
 -- smaller, equal to, or larger than the second. 'Ordering' is a
 -- three-valued type used as the result of a comparison, with
 -- constructors 'LT', 'EQ', and 'GT'.
-data Comparison a = Comparison (a -> a -> Ordering)
+newtype Comparison a = Comparison (a -> a -> Ordering)
 
 runComparison ::
   Comparison a
@@ -34,7 +34,7 @@ runComparison (Comparison f) =
 
 -- | All this type does is swap the arguments around. We'll see why we
 -- want it when we look at its 'Contravariant' instance.
-data SwappedArrow a b = SwappedArrow (b -> a)
+newtype SwappedArrow a b = SwappedArrow (b -> a)
 
 runSwappedArrow ::
   SwappedArrow a b
@@ -79,8 +79,7 @@ instance Contravariant Predicate where
     (b -> a)
     -> Predicate a
     -> Predicate b
-  (>$<) =
-    error "todo: Course.Contravariant (>$<)#instance Predicate"
+  (>$<) f (Predicate g) = Predicate (g . f) 
 
 -- | Use the function before comparing.
 --
@@ -91,8 +90,7 @@ instance Contravariant Comparison where
     (b -> a)
     -> Comparison a
     -> Comparison b
-  (>$<) =
-    error "todo: Course.Contravariant (>$<)#instance Comparison"
+  (>$<) f (Comparison g) = Comparison(\b1 b2 -> g (f b1) (f b2))
 
 -- | The kind of the argument to 'Contravariant' is @Type -> Type@, so
 -- our '(>$<)' only works on the final type argument. The
@@ -106,8 +104,7 @@ instance Contravariant (SwappedArrow t) where
     (b -> a)
     -> SwappedArrow x a
     -> SwappedArrow x b
-  (>$<) =
-    error "todo: Course.Contravariant (>$<)#instance SwappedArrow"
+  (>$<) f (SwappedArrow g) = SwappedArrow (g. f)
 
 
 -- | If we give our 'Contravariant' an @a@, then we can "accept" any
@@ -119,5 +116,4 @@ instance Contravariant (SwappedArrow t) where
   a
   -> k a
   -> k b
-(>$) =
-  error "todo: Course.Contravariant#(>$)"
+(>$) a ka = const a >$< ka
